@@ -21,21 +21,25 @@ DEFAULT_PROMPTS = [
     "Summarize the tradeoffs between latency and throughput in one paragraph.",
     "List three ways to benchmark LLM inference in production.",
     "Explain why acceptance rate matters for EAGLE3 in simple terms.",
-    "Give a compact overview of Qwen2.5-0.5B and its likely serving profile.",
+    "Give a compact overview of a 1B to 2B Qwen-family model and its likely serving profile.",
 ]
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Benchmark Qwen2.5-0.5B speculative decoding with a fake or real "
-            "EAGLE3 draft model using synthetic rejection sampling."
+            "Benchmark a Qwen-family verifier such as Qwen2.5-0.5B-Instruct "
+            "or Qwen3-1.7B with a fake or real EAGLE3 draft model using "
+            "synthetic rejection sampling."
         )
     )
     parser.add_argument(
         "--model",
         default="Qwen/Qwen2.5-0.5B-Instruct",
-        help="Verifier model name or path.",
+        help=(
+            "Verifier model name or path. Examples: "
+            "Qwen/Qwen2.5-0.5B-Instruct, Qwen/Qwen3-1.7B."
+        ),
     )
     parser.add_argument(
         "--draft-model",

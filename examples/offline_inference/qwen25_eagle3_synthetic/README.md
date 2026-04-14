@@ -1,7 +1,10 @@
-# Qwen2.5-0.5B Eagle3 Synthetic Acceptance Experiments
+# Qwen Eagle3 Synthetic Acceptance Experiments
 
 This directory contains two helper scripts for engineering-side speculative
-decoding experiments on `Qwen/Qwen2.5-0.5B-Instruct`:
+decoding experiments on Qwen-family verifier models such as:
+
+- `Qwen/Qwen2.5-0.5B-Instruct`
+- `Qwen/Qwen3-1.7B`
 
 - `generate_fake_eagle3.py`
   Creates a minimal Speculators-format EAGLE3 draft checkpoint that pairs with
@@ -13,8 +16,8 @@ decoding experiments on `Qwen/Qwen2.5-0.5B-Instruct`:
 
 ## Why this setup exists
 
-For a very small verifier like Qwen2.5-0.5B, it is often unclear whether
-EAGLE3 is worth training at all. This workflow lets you:
+For a small or mid-sized verifier like Qwen2.5-0.5B or Qwen3-1.7B, it is often
+unclear whether EAGLE3 is worth training at all. This workflow lets you:
 
 1. Build a structurally valid EAGLE3 checkpoint with near-zero preparation.
 2. Keep the real drafter + verifier + scheduler execution path in vLLM.
@@ -56,6 +59,27 @@ uv run python examples/offline_inference/qwen25_eagle3_synthetic/benchmark_synth
   --acceptance-rates 0.2 0.4 0.6 0.8 \
   --num-speculative-tokens 1 2 4 6 \
   --output-dir /path/to/results
+```
+
+Generate a fake EAGLE3 checkpoint for Qwen3-1.7B:
+
+```bash
+uv run python examples/offline_inference/qwen25_eagle3_synthetic/generate_fake_eagle3.py \
+  --output-dir /path/to/qwen3-17b-fake-eagle3 \
+  --verifier Qwen/Qwen3-1.7B \
+  --num-layers 1 \
+  --init-strategy gaussian
+```
+
+Run a speculative sweep on Qwen3-1.7B:
+
+```bash
+uv run python examples/offline_inference/qwen25_eagle3_synthetic/benchmark_synthetic_eagle3.py \
+  --model Qwen/Qwen3-1.7B \
+  --draft-model /path/to/qwen3-17b-fake-eagle3 \
+  --acceptance-rates 0.2 0.4 0.6 0.8 \
+  --num-speculative-tokens 1 2 4 6 \
+  --output-dir /path/to/results-qwen3
 ```
 
 ## Notes

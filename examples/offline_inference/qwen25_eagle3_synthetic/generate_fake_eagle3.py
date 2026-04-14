@@ -16,14 +16,18 @@ from transformers import AutoConfig, AutoTokenizer
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Create a minimal Speculators-format EAGLE3 checkpoint for "
-            "Qwen/Qwen2.5-0.5B-Instruct without training."
+            "Create a minimal Speculators-format EAGLE3 checkpoint for a "
+            "Qwen-family verifier such as Qwen2.5-0.5B-Instruct or "
+            "Qwen3-1.7B without training."
         )
     )
     parser.add_argument(
         "--verifier",
         default="Qwen/Qwen2.5-0.5B-Instruct",
-        help="Verifier model name or path.",
+        help=(
+            "Verifier model name or path. Examples: "
+            "Qwen/Qwen2.5-0.5B-Instruct, Qwen/Qwen3-1.7B."
+        ),
     )
     parser.add_argument(
         "--output-dir",
@@ -117,11 +121,17 @@ def build_vocab_mappings(
             "draft_vocab_size cannot exceed target_vocab_size for this helper script."
         )
 
-    # t2d: target token id -> draft token id
-    # d2t: draft token id -> target token id
-    t2d = torch.zeros(target_vocab_size, dtype=torch.long)
+    # Speculators expects:
+    # - t2d: a boolean mask over the target vocab indicating which target
+    #   tokens are present in the draft vocab.
+    # - d2t: a dense mapping from draft vocab index -> target vocab index.
+    #
+    # For this helper we expose the first `draft_vocab_size` target tokens as
+    # the draft vocabulary. In the full-vocab case this becomes an all-True
+    # mask plus an identity d2t mapping.
     visible = torch.arange(draft_vocab_size, dtype=torch.long)
-    t2d[:draft_vocab_size] = visible
+    t2d = torch.zeros(target_vocab_size, dtype=torch.bool)
+    t2d[visible] = True
     d2t = visible.clone()
     return t2d, d2t
 
